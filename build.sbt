@@ -8,4 +8,8 @@ libraryDependencies ++= Seq(
   "org.webjars" % "requirejs" % "2.1.11-1"
 )
 
-lazy val root = (project in file(".")).addPlugins(PlayScala)
+fork in (Test,run) := false
+
+lazy val root = (project in file(".")).addPlugins(PlayScala).settings(
+  fork in Test := false
+)

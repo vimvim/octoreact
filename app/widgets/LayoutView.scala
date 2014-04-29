@@ -3,10 +3,16 @@ package widgets
 import akka.actor.Actor
 import akka.actor.Actor.Receive
 
+object LayoutView {
+
+  def render(template:Function2)
+
+}
+
 /**
  * Render template
  */
-class TemplateWidget extends Actor {
+class LayoutView extends Actor {
 
   override def receive: Receive = {
 

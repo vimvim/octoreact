@@ -2,6 +2,7 @@ package widgets
 
 import play.api.templates.{Template3, Template2, Template1, Template0}
 
+/*
 sealed trait TemplateInfo[Result] {
   def render():Result
 }
@@ -42,3 +43,5 @@ object TemplateInfo {
 }
 
 case class Render[Result](template:TemplateInfo[Result])
+
+*/
