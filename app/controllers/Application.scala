@@ -6,13 +6,13 @@ import akka.actor.{ActorRef, Props}
 import akka.pattern.ask
 import akka.util.Timeout
 
-
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
 
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import widgets.RenderingContext
 
-import widgets.{TemplateInfo, Render, LayoutView}
+// import widgets.{TemplateInfo, Render, LayoutView}
 
 object Application extends Controller {
 

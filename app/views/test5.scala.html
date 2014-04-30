@@ -1,0 +1,36 @@
+@*****************************************************************
+* This is test template for LayoutView
+*****************************************************************@
+
+@()(viewId:String, context: widgets.RenderingContext)
+
+@import play.api.templates.HtmlFormat
+@import widgets.TestView
+
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+
+    <!-- Pass template which is have usage params - color -->
+    @TestView.render("/testViews/test1", context, views.html.test6("red"))
+
+    <!-- Pass template which is not have usage params -->
+    @TestView.render("/testViews/test2", context, views.html.test7())
+
+    <!-- Pass nested template -->
+    @display(viewID:String, value:String) = {
+        <div id='@viewId'>@value</div>
+    }
+    @TestView.render("/testViews/test3", context, display)
+
+    <!-- Pass template defined in place -->
+    @TestView.render("/testViews/test4", context, (viewID, value)=>{
+        HtmlFormat.raw(s"<div id='$viewId'>$value</div>")
+    })
+
+</body>
+</html>
