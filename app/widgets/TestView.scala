@@ -27,7 +27,7 @@ object TestView {
   def render(widget:ActorRef, template:(String, String) => HtmlFormat.Appendable) = widget ? Render(template)
 
   /**
-   * Used inside of the template
+   * Used inside of the template or in the controller
    * TODO: VERY IMPORTANT - VIEW COMPANION OBJECT IS RESPONSIBLE TO PROVIDE ActorRef ( WILL BE ADDED TO THE  RenderingContext )
    *
    * @param viewID      ID of the view. TestView companion object is responsible to process this id and resolve to the ActorRef.

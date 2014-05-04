@@ -4,8 +4,17 @@
 
 @()(viewId:String, context: widgets.RenderingContext)
 
+
 @import play.api.templates.HtmlFormat
-@import widgets.TestView
+@import widgets.TestView as TestView
+
+// TODO: DEFINE WIDGETS HERE  !!!
+@context.widgets(Map(
+  "test1"=>SessionScope(TestView(views.html.test6("red")))
+  "test2"=>RequestScope(TestView(views.html.test7()))
+))
+
+
 
 <!DOCTYPE html>
 <html>
@@ -14,6 +23,22 @@
   <title></title>
 </head>
 <body>
+
+
+    // TODO: Actual way for define place for child widget
+    @context.widget("test1")
+
+    // TODO: THIS IS OBSOLETE !!
+    @ctx.widgets.test1(views.html.test6("red"))
+
+
+    // TODO: ALL BELOW NEEDS TO BE REVIEWED !!
+
+
+    // TODO: THUNK ABOUT CONSTRUCTION LIKE:
+    // TODO: @ctx.widgets.test1(views.html.test6("red"))
+    // TODO: THIS IS ONE OF THE VARIANTS. LLOK AT THE TOP FOR ANOTHR !!!
+    // TODO: @ctx.widgets.layout1(views.html.testLayout(), new LayoutContext1(ctx, SessionScope(...)))
 
     <!-- Pass template which is have usage params - color -->
     @TestView.render("/testViews/test1", context, views.html.test6("red"))
@@ -31,6 +56,12 @@
     @TestView.render("/testViews/test4", context, (viewID, value)=>{
         HtmlFormat.raw(s"<div id='$viewId'>$value</div>")
     })
+
+    <!-- Render child layout view -->
+    @LayoutView.render("/testViews/test4", context, (viewID, value)=>{
+    HtmlFormat.raw(s"<div id='$viewId'>$value</div>")
+    })
+
 
 </body>
 </html>

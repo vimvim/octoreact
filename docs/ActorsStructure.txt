@@ -1,0 +1,23 @@
+
+
+workspace
+   content
+        views
+            timeline
+            posts           Posts for al users
+   frontend ???
+   users
+      user1
+        content
+            posts
+                1           Post with the id 1 ( Persistent actor which is represent post )
+                2
+            comments
+                1
+                2
+                3
+        views
+            posts           Posts for specific user
+                1
+                2
+      user2
