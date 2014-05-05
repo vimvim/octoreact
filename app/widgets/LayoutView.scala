@@ -13,6 +13,7 @@ import akka.util.Timeout
 import play.api.templates.HtmlFormat
 import widgets.LayoutView.Render
 import play.api.libs.concurrent.Akka
+import javax.swing.text.ViewFactory
 
 object LayoutView {
 
@@ -74,5 +75,16 @@ class LayoutView(viewId:String) extends Actor {
     val body = html.body
 
     HtmlFormat.raw(body)
+  }
+}
+
+class LayoutRenderingContext(val view:ActorRef) {
+
+  def widgets(widgets: Map[String, ViewResolver]) = {
+
+  }
+
+  def widget(viewID:String) = {
+
   }
 }

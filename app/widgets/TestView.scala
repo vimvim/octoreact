@@ -18,13 +18,36 @@ object TestView {
   case class Render(template:(String, String) => HtmlFormat.Appendable)
 
   /**
+   * This is used for define concrete instance of the view ( for example inside of the template )
+   *
+   * @param template
+   * @return
+   */
+  def apply(template:(String, String) => HtmlFormat.Appendable):ViewFactory ={
+
+    new ViewFactory {
+
+      override def apply(viewID:String, parentContext:RenderingContext): ViewRenderer = {
+
+        new ViewRenderer {
+
+          override def apply(context: RenderingContext): String = {
+
+
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Used for send rendering request to the TestView actor.
    *
    * @param widget
    * @param template
    * @return
    */
-  def render(widget:ActorRef, template:(String, String) => HtmlFormat.Appendable) = widget ? Render(template)
+  // def render(widget:ActorRef, template:(String, String) => HtmlFormat.Appendable) = widget ? Render(template)
 
   /**
    * Used inside of the template or in the controller
@@ -34,9 +57,9 @@ object TestView {
    * @param context
    * @param template
    */
-  def render(viewID:String, context:RenderingContext, template:(String, String) => HtmlFormat.Appendable) = {
-
-  }
+  // def render(viewID:String, context:RenderingContext, template:(String, String) => HtmlFormat.Appendable) = {
+  //
+  // }
 }
 
 /**
