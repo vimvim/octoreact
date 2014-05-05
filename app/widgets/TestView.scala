@@ -7,15 +7,21 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import play.api.templates.HtmlFormat
+import scala.concurrent.Future
 
 /**
- * Interface to the TestView
+ * Interface to the TestView.
+ * TestView is used for testing various rendering scenarios and can be bound to the Request, Session, Site scopes.
+ * This is most likely will not be occurs for ordinal widgets used in the system.
+ *
+ * Test view is display countdown as well as some view identification.
+ *
  */
 object TestView {
 
   implicit val timeout = Timeout(3 seconds)
 
-  case class Render(template:(String, String) => HtmlFormat.Appendable)
+  case class Render(parentContext: RenderingContext, template:(String, String) => HtmlFormat.Appendable)
 
   /**
    * This is used for define concrete instance of the view ( for example inside of the template )
@@ -23,19 +29,13 @@ object TestView {
    * @param template
    * @return
    */
-  def apply(template:(String, String) => HtmlFormat.Appendable):ViewFactory ={
+  def apply(template: (String, String) => HtmlFormat.Appendable): ViewRenderer = {
 
-    new ViewFactory {
+    new ViewRenderer {
 
-      override def apply(viewID:String, parentContext:RenderingContext): ViewRenderer = {
-
-        new ViewRenderer {
-
-          override def apply(context: RenderingContext): String = {
+      override def apply(parentContext: RenderingContext): Future[String] = {
 
 
-          }
-        }
       }
     }
   }

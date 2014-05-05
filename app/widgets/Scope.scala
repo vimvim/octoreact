@@ -3,16 +3,16 @@ package widgets
 import widgets.ViewRenderer
 
 /**
- * Created by vim on 5/5/14.
+ * TODO: Add locking
  */
 class Scope {
 
-  def resolve(viewID:String):Option[ViewRenderer] = {
+  var views = Map[String,ViewRenderer]()
 
-  }
+  def resolve(viewID:String):Option[ViewRenderer] = views.get(viewID)
 
   def register(viewID:String, viewRenderer:ViewRenderer) = {
-
+    views = views.+((viewID, viewRenderer))
   }
 
 }

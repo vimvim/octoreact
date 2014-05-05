@@ -10,7 +10,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 
-import widgets.{ActorRenderingContext, ControllerRenderingContext, RenderingContext, LayoutView}
+import widgets._
 
 /**
  * Created by vim on 5/3/14.
@@ -33,8 +33,22 @@ class AsyncRenderingTest(_system: ActorSystem) extends TestKit(_system)
 
   "An LayoutView" should "be able to correctly render template with the child widgets" in {
 
-    val renderingContext = new ControllerRenderingContext(new RequestScope(), new SessionScope(), new UserScope(), new SiteScope())
+    val sessionScope = new Scope()
+    val siteScope = new Scope()
 
+    val rootContext = new ControllerRenderingContext(Map[ScopeID, Scope](
+      SessionScope.ID->sessionScope
+    ))
+
+    // siteScope.resolve("root") match {
+    //   case Some()
+    // }
+
+    val viewRenderer = LayoutView(views.html.test5())
+    viewRenderer(rootContext)
+
+
+    /*
     LayoutView.render("root", renderingContext, views.html.test5(), new ActorRenderingContext(renderingContext,
        Map(
         "view1"->SessionScope(Props[TemplateWidget]),
@@ -43,5 +57,18 @@ class AsyncRenderingTest(_system: ActorSystem) extends TestKit(_system)
         "view1"->SiteScope(Props[TemplateWidget]),
        )
     ))
+    */
   }
+
+  /*
+  def getRootView(rootContext: RenderingContext, siteScope:Scope): ViewRenderer = {
+    siteScope.resolve("root") match {
+      case Some(rootViewRenderer) => rootViewRenderer
+      case None =>
+        val viewFactory = LayoutView(views.html.test5())
+        val viewRenderer =
+    }
+  }
+  */
+
 }
