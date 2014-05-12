@@ -21,45 +21,40 @@ object TestView {
 
   implicit val timeout = Timeout(3 seconds)
 
-  case class Render(parentContext: RenderingContext, template:(String, String) => HtmlFormat.Appendable)
+  case class Render(parentContext: RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable)
 
   /**
    * This is used for define concrete instance of the view ( for example inside of the template )
+   * Will return view renderer function which will works like are interface for rendering view.
    *
    * @param template
    * @return
    */
-  def apply(template: (String, String) => HtmlFormat.Appendable): ViewRenderer = {
+  def apply(template: (RenderingContext) => HtmlFormat.Appendable): ViewFactory = {
 
-    new ViewRenderer {
+    new ViewFactory() {
 
-      override def apply(parentContext: RenderingContext): Future[String] = {
+      /**
+       * This method will be called for resolving concrete instance of the view ( for example from scope handler )
+       *
+       * @return
+       */
+      override def getInstance(parentContext:RenderingContext): ViewRenderer = {
 
+        val view = parentContext.createActor()
 
+        new ViewRenderer(){
+
+          override def apply(): Future[HtmlFormat.Appendable] =
+            (view ? Render(parentContext, template)).mapTo
+        }
       }
     }
   }
 
-  /**
-   * Used for send rendering request to the TestView actor.
-   *
-   * @param widget
-   * @param template
-   * @return
-   */
-  // def render(widget:ActorRef, template:(String, String) => HtmlFormat.Appendable) = widget ? Render(template)
+  def render(widget:ActorRef, parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable) =
+    widget ? Render(parentContext, template)
 
-  /**
-   * Used inside of the template or in the controller
-   * TODO: VERY IMPORTANT - VIEW COMPANION OBJECT IS RESPONSIBLE TO PROVIDE ActorRef ( WILL BE ADDED TO THE  RenderingContext )
-   *
-   * @param viewID      ID of the view. TestView companion object is responsible to process this id and resolve to the ActorRef.
-   * @param context
-   * @param template
-   */
-  // def render(viewID:String, context:RenderingContext, template:(String, String) => HtmlFormat.Appendable) = {
-  //
-  // }
 }
 
 /**

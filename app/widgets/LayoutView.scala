@@ -28,14 +28,24 @@ object LayoutView {
    * @param template
    * @return
    */
-  def apply(template:(LayoutRenderingContext) => HtmlFormat.Appendable): ViewRenderer = {
+  def apply(template:(LayoutRenderingContext) => HtmlFormat.Appendable): ViewFactory = {
 
-    new ViewRenderer {
+    new ViewFactory() {
 
-      override def apply(context: RenderingContext): Future[Any] = {
+      /**
+       * This method will be called for resolving concrete instance of the view ( for example from scope handler )
+       *
+       * @return
+       */
+      override def getInstance(parentContext:RenderingContext): ViewRenderer = {
 
-        val view = context.createActor()
-        render(view, context, template)
+        val view = parentContext.createActor()
+
+        new ViewRenderer(){
+
+          override def apply(): Future[HtmlFormat.Appendable] =
+            (view ? Render(parentContext, template)).mapTo
+        }
       }
     }
   }
@@ -97,7 +107,7 @@ class LayoutView extends Actor {
 
 class LayoutRenderingContext(parentContext:Option[RenderingContext], viewActor:ActorRef) extends ActorRenderingContext(parentContext, viewActor) {
 
-  var views:Map[String, ViewRenderer] = null
+  var views:Map[String, ViewFactory] = null
 
   var pendingRenders:Map[String, Future[HtmlFormat.Appendable]] = Map[String, Future[HtmlFormat.Appendable]]()
 
@@ -105,7 +115,7 @@ class LayoutRenderingContext(parentContext:Option[RenderingContext], viewActor:A
     pendingRenders = pendingRenders+ ((viewID, future))
   }
 
-  def views(views: Map[String, ViewRenderer]) = {
+  def views(views: Map[String, ViewFactory]) = {
     this.views = views
   }
 

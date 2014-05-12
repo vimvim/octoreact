@@ -9,6 +9,10 @@ abstract class RenderingContext(val parentContext:Option[RenderingContext]) {
 
   def createActor(props:Props):ActorRef
 
+  def getScopedEntry[T](scopeID:ScopeID, viewID:String):Option[T]
+
+  def putScopedEntry[T](scopeID:ScopeID, viewID:String, value:T)
+
 }
 
 class ControllerRenderingContext(scopes:Map[ScopeID,Scope]) extends RenderingContext(None) {
