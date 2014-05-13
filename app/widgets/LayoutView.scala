@@ -9,18 +9,27 @@ import akka.util.Timeout
 import akka.pattern.ask
 import akka.actor.Actor.Receive
 import akka.util.Timeout
+import akka.actor._
+import akka.pattern.{ after, ask, pipe }
+import akka.util.Timeout
 
 import play.api.templates.HtmlFormat
 import widgets.LayoutView.Render
 import play.api.libs.concurrent.Akka
-import javax.swing.text.ViewFactory
 import scala.concurrent.Future
+import play.api.Play.current
+
+sealed class RenderResponse()
+
+case class RenderedContent(label:String, content:String) extends RenderResponse
+
+case class RenderTimeout(label:String) extends RenderResponse
 
 object LayoutView {
 
   implicit val timeout = Timeout(3 seconds)
 
-  case class Render(parentContext:RenderingContext, template:(LayoutRenderingContext) => HtmlFormat.Appendable)
+  case class Render(parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable)
 
   /**
    * This is used for define concrete instance of the view ( for example inside of the template )
@@ -28,7 +37,7 @@ object LayoutView {
    * @param template
    * @return
    */
-  def apply(template:(LayoutRenderingContext) => HtmlFormat.Appendable): ViewFactory = {
+  def apply(template:(RenderingContext) => HtmlFormat.Appendable): ViewFactory = {
 
     new ViewFactory() {
 
@@ -39,7 +48,7 @@ object LayoutView {
        */
       override def getInstance(parentContext:RenderingContext): ViewRenderer = {
 
-        val view = parentContext.createActor()
+        val view = parentContext.createActor(Props[LayoutView])
 
         new ViewRenderer(){
 
@@ -50,7 +59,7 @@ object LayoutView {
     }
   }
 
-  def render(widget:ActorRef, parentContext:RenderingContext, template:(LayoutRenderingContext) => HtmlFormat.Appendable) = widget ? Render(parentContext, template)
+  def render(widget:ActorRef, parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable) = widget ? Render(parentContext, template)
 
   /**
    * Used inside of the template or in the controller
@@ -88,56 +97,81 @@ object LayoutView {
  */
 class LayoutView extends Actor {
 
+  implicit val ec = Akka.system.dispatcher
+
   override def receive: Receive = {
 
     case Render(parentContext, template) => render(parentContext, template)
 
   }
 
-  private def render(parentContext:RenderingContext, template:(LayoutRenderingContext) => HtmlFormat.Appendable):HtmlFormat.Appendable = {
+  private def render(parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable):HtmlFormat.Appendable = {
 
-    val renderingContext = new LayoutRenderingContext(Some(parentContext))
+    val renderingContext = new ActorRenderingContext(Some(parentContext), self)
     val html= template(renderingContext)
 
     val body = html.body
 
+    val futures = renderingContext.pendingRenders.map((entry)=>{
+
+      val subContentLabel = entry._1
+      val renderingFuture = entry._2
+
+      @volatile var timedOut = false
+
+      (Future firstCompletedOf Seq(
+        renderingFuture map {response=>
+
+          if (timedOut) {
+            // lateDeliveryActor ! response
+            // log.debug(s"$subContentLabel Rendered too late. Send for async delivery. ")
+          }
+
+          response
+        },
+        after(FiniteDuration(3, "seconds"), Akka.system.scheduler) {
+
+          Future {
+            timedOut = true
+            RenderTimeout(subContentLabel)
+          }
+
+          // Future successful RenderTimeout(subContentLabel)
+        }
+      )).mapTo[RenderResponse]
+    })
+
+    Future.fold(futures)(Map[String, String]()) {
+      (contentMap, response: RenderResponse) =>
+
+        // log.debug(s"$label: Got response for subcontent $response")
+
+        response match {
+          case RenderedContent(subContentLabel, mimeType, data) => contentMap ++ Map((subContentLabel, data))
+          case RenderTimeout(subContentLabel) => contentMap ++ Map((subContentLabel, "Content rendering timeout"))
+        }
+
+    } map {
+      contentMap =>
+        // Render all gathered content ( will render template is the real system here )
+        renderFlat(label, topContent, contentMap)
+    }
+
     HtmlFormat.raw(body)
   }
-}
 
-class LayoutRenderingContext(parentContext:Option[RenderingContext], viewActor:ActorRef) extends ActorRenderingContext(parentContext, viewActor) {
+  private def renderFlat(label: String, subContentMap:Map[String,String]):RenderedContent = {
 
-  var views:Map[String, ViewFactory] = null
+    // Tracer.log(s"$label: Final rendering")
 
-  var pendingRenders:Map[String, Future[HtmlFormat.Appendable]] = Map[String, Future[HtmlFormat.Appendable]]()
+    RenderedContent(label, "text", subContentMap.foldLeft("") {
+      (data, entry) =>
 
-  def pendingRender(viewID:String, future: Future[HtmlFormat.Appendable]) {
-    pendingRenders = pendingRenders+ ((viewID, future))
-  }
+        val contentLabel = entry._1
+        val contentData = entry._2
 
-  def views(views: Map[String, ViewFactory]) = {
-    this.views = views
-  }
-
-  /**
-   * Will be called from template at the place where view needs to be rendered.
-   * Call view renderer and return temporary placeholder for view content.
-   * Placeholder will be later be replaced by actual rendered view content.
-   *
-   * @param viewID    Id of the which is needs to be rendered
-   * @return
-   */
-  def view(viewID:String):String = {
-
-    views.get(viewID) match {
-
-      case Some(viewRenderer) =>
-        val future = viewRenderer(this)
-        pendingRender(viewID, future)
-
-        s"%%WIDGET_PLACEHOLDER_$viewID%%"
-
-      case None => throw new Exception(s"View $viewID is not defined for template.")
-    }
+        data.concat(s"<div id='$contentLabel'>$contentData</div>")
+    })
   }
 }
+

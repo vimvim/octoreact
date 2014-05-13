@@ -2,7 +2,6 @@ package widgets
 
 import scala.concurrent.Future
 import play.api.templates.HtmlFormat
-import widgets.RenderingContext
 
 /*
 object ViewRenderer {

@@ -1,18 +1,21 @@
 package widgets
 
-import widgets.ViewRenderer
 
 /**
- * TODO: Add locking
+ * TODO: Add locking ?? How to deal with the fact that actors is can be on different nodes ??
+ * TODO: THEY CAN'T USE THE SAME SCOPE !!
  */
 class Scope {
 
-  var views = Map[String,ViewRenderer]()
+  var values = Map[String,Any]()
 
-  def resolve(viewID:String):Option[ViewRenderer] = views.get(viewID)
+  def get[T](viewID:String):Option[T] = values.get(viewID) match {
+    case Some(value) => Some(value.asInstanceOf[T])
+    case _ => None
+  }
 
-  def register(viewID:String, viewRenderer:ViewRenderer) = {
-    views = views.+((viewID, viewRenderer))
+  def register[T](id:String, value:T) = {
+    values = values.+((id, value))
   }
 
 }

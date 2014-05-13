@@ -2,12 +2,13 @@ package widgets
 
 import scala.concurrent.duration._
 
-import akka.actor.ActorRef
+import akka.actor.{Actor, Props, ActorRef}
 import akka.pattern.ask
 import akka.util.Timeout
 
 import play.api.templates.HtmlFormat
 import scala.concurrent.Future
+import widgets.TestView.Render
 
 /**
  * Interface to the TestView.
@@ -41,7 +42,7 @@ object TestView {
        */
       override def getInstance(parentContext:RenderingContext): ViewRenderer = {
 
-        val view = parentContext.createActor()
+        val view = parentContext.createActor(Props[TestView])
 
         new ViewRenderer(){
 
@@ -60,6 +61,21 @@ object TestView {
 /**
  * Test view. Used for testing interaction with the view actor.
  */
-class TestView {
+class TestView extends Actor {
 
+  override def receive: Receive = {
+
+    case Render(parentContext, template) => render(parentContext, template)
+
+  }
+
+  private def render(parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable):HtmlFormat.Appendable = {
+
+    val renderingContext = new ActorRenderingContext(Some(parentContext), self)
+    val html= template(renderingContext)
+
+    val body = html.body
+
+    HtmlFormat.raw(body)
+  }
 }

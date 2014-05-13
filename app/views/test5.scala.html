@@ -2,17 +2,13 @@
 * This is test template for LayoutView
 *****************************************************************@
 
-@()(context: widgets.LayoutRenderingContext)
+@()(context: widgets.RenderingContext)
 
 @import play.api.templates.HtmlFormat
 @import widgets.TestView
 @import widgets.SessionScope
+@import widgets.template.Render
 
-@context.views(Map(
-  "test1"->SessionScope("test1", TestView(views.html.test6("red"))),     // One view per session
-  "test2"->TestView(views.html.test7())                                  // One view for every request
-  // "test3"->Singltone(TestView(views.html.test7())                     // Site wide view ( one for all ).
-))
 
 <!DOCTYPE html>
 <html>
@@ -23,33 +19,14 @@
 <body>
 
 
-    // Actual way for define place for child widget
-    @context.view("test1")
+    @Render(context, SessionScope("test1", TestView(views.html.test6("red"))))
+    @Render(context, TestView(views.html.test7()))
 
-    <!-- TODO: Think about such simpleinline rendering. Especialy for persistent views which is not scoped -->
-    <!-- @TestView.render(context, views.html.test7()) -->
-
-    <!-- Pass template which is have usage params - color -->
-    <!-- @TestView.render("/testViews/test1", context, views.html.test6("red")) -->
-
-    <!-- Pass template which is not have usage params -->
-    <!-- @TestView.render("/testViews/test2", context, views.html.test7()) -->
-
-    <!-- Pass nested template -->
-    <!-- @display(viewID:String, value:String) = {
-        <div id='@viewId'>@value</div>
-    }
-    @TestView.render("/testViews/test3", context, display) -->
-
-    <!-- Pass template defined in place -->
-    <!-- @TestView.render("/testViews/test4", context, (viewID, value)=>{
-        HtmlFormat.raw(s"<div id='$viewId'>$value</div>")
-    }) -->
-
-    <!-- Render child layout view -->
-    <!-- @LayoutView.render("/testViews/test4", context, (viewID, value)=>{
-    HtmlFormat.raw(s"<div id='$viewId'>$value</div>")
-    }) -->
+    <!-- TODO: Think about inline rendering ( can use render companion object, implicit conext, ... ) Especialy for persistent views which is not scoped -->
+    <!-- TODO: Implement view rendering Master-Slave strategy for perfomance improbements. Strategy can be passed to the view companion object -->
+    <!-- TODO: Master view will manage slave view and send subsequent render requests to them. -->
+    <!-- TODO: Master view will manage data updates and send notifications to the slave views -->
+    <!-- TODO: Implement test case with the Cell, Cells, CellView, CellsView, CellsTotalView -->
 
 
 </body>

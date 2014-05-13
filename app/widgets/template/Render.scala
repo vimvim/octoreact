@@ -1,6 +1,44 @@
-package widgets
+package widgets.template
 
-import play.api.templates.{Template3, Template2, Template1, Template0}
+import play.api.templates.Template1
+import widgets.{ViewFactory, RenderingContext}
+
+object Render {
+
+  /**
+   *
+   * TODO: viewID can be optional and be able to be generated using context
+   *
+   * @param context
+   * @param viewFactory
+   * @param viewIdOption
+   * @return
+   */
+  def apply(context:RenderingContext, viewFactory:ViewFactory, viewIdOption:Option[String] = None) = {
+
+    def getViewID(viewIdOption:Option[String]) = {
+
+      viewIdOption match {
+        case Some(viewID) => viewID
+        case None => context.createViewId()
+      }
+    }
+
+    render(context, viewFactory, getViewID(viewIdOption))
+  }
+
+  def render(context:RenderingContext, viewFactory:ViewFactory, viewId:String) = {
+
+    val viewInstance = viewFactory.getInstance(context)
+    val future = viewInstance()
+
+    context.pendingRender(viewId, future)
+
+    s"%%WIDGET_PLACEHOLDER_$viewId%%"
+  }
+
+
+}
 
 /*
 sealed trait TemplateInfo[Result] {
