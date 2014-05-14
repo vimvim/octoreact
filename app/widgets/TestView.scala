@@ -46,7 +46,7 @@ object TestView {
 
         new ViewRenderer(){
 
-          override def apply(): Future[HtmlFormat.Appendable] =
+          override def apply(): Future[RenderResponse] =
             (view ? Render(parentContext, template)).mapTo
         }
       }
@@ -61,21 +61,23 @@ object TestView {
 /**
  * Test view. Used for testing interaction with the view actor.
  */
-class TestView extends Actor {
+class TestView(viewID:String) extends Actor {
 
   override def receive: Receive = {
 
-    case Render(parentContext, template) => render(parentContext, template)
+    case Render(parentContext, template) => sender ! render(parentContext, template)
 
   }
 
-  private def render(parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable):HtmlFormat.Appendable = {
+  private def render(parentContext:RenderingContext, template:(RenderingContext) => HtmlFormat.Appendable):RenderResponse = {
 
     val renderingContext = new ActorRenderingContext(Some(parentContext), self)
     val html= template(renderingContext)
 
     val body = html.body
 
-    HtmlFormat.raw(body)
+    RenderedContent(viewID, body)
+
+    // HtmlFormat.raw(body)
   }
 }

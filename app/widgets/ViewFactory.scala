@@ -19,7 +19,7 @@ object ViewRenderer {
  * View renderer.
  * Simple interface for rendering of the view.
  */
-abstract class ViewRenderer extends (() => Future[HtmlFormat.Appendable])
+abstract class ViewRenderer extends (() => Future[RenderResponse])
 
 /*
 object ViewFactory {

@@ -34,7 +34,7 @@ object Render {
 
     context.pendingRender(viewId, future)
 
-    s"%%WIDGET_PLACEHOLDER_$viewId%%"
+    s"{-%%% WIDGET_PLACEHOLDER $viewId %%%-}"
   }
 
 

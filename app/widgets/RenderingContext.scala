@@ -13,7 +13,7 @@ import play.api.Play.current
  */
 abstract class RenderingContext(val parentContext:Option[RenderingContext]) {
 
-  var pendingRenders:Map[String, Future[HtmlFormat.Appendable]] = Map[String, Future[HtmlFormat.Appendable]]()
+  var pendingRenders:Map[String, Future[RenderResponse]] = Map[String, Future[RenderResponse]]()
 
   def createActor(props:Props):ActorRef
 
@@ -25,7 +25,7 @@ abstract class RenderingContext(val parentContext:Option[RenderingContext]) {
 
   // def getScope(scopeID:ScopeID):Scope
 
-  def pendingRender(viewID:String, future: Future[HtmlFormat.Appendable]) {
+  def pendingRender(viewID:String, future: Future[RenderResponse]) {
     pendingRenders = pendingRenders+ ((viewID, future))
   }
 
