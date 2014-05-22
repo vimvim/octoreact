@@ -23,6 +23,8 @@ class CqrsTest {
   //  - CreateAndAttachCellExecutor will resolve Group by send Get message to the GroupsRepository actor
   //  - CreateAndAttachCellExecutor will send AttachCell command to the Group persistent actor
 
+  // NOTE: SEE ALSO NOTES ABOUT EVENTS, MODEL AND VIEW
+
   //  ВОПРОС: ВСЕ ЛИ КОММАНДЫ ДОЛЖНЫ ИДТИ ЧЕРЕЗ CmdDispatcher
   //  ВОЗМОЖНО ЛИ ОРГАНИЧНО ОПИСАТЬ ДЕЙСТВИЯ ДЛЯ compound command ? IE: Create(..) | Get(..) | Attach(...)
   //  И ВЫПОЛНЯТЬ ИХ ВСЕ В РАМКАХ CmdDispatcher БЕЗ СОЗДАНИЯ ДОП. АКТОРОВ.
