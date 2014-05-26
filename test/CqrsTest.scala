@@ -28,4 +28,28 @@ class CqrsTest {
   //  ВОПРОС: ВСЕ ЛИ КОММАНДЫ ДОЛЖНЫ ИДТИ ЧЕРЕЗ CmdDispatcher
   //  ВОЗМОЖНО ЛИ ОРГАНИЧНО ОПИСАТЬ ДЕЙСТВИЯ ДЛЯ compound command ? IE: Create(..) | Get(..) | Attach(...)
   //  И ВЫПОЛНЯТЬ ИХ ВСЕ В РАМКАХ CmdDispatcher БЕЗ СОЗДАНИЯ ДОП. АКТОРОВ.
+
+  Chain(RootGroup.Create(), Parallel(List(
+    Chain(CellsGroup.create(), Parallel(List(
+      Cell.create("cell11", 1),
+      Cell.create("cell12", 2),
+      Cell.create("cell13", 3)
+    )),
+    Chain(CellsGroup.create(), Parallel(List(
+      Cell.create("cell21", 11),
+      Cell.create("cell22", 12),
+      Cell.create("cell23", 13)
+    )),
+    Cell.create("cell3", 30)
+  )))
+
+  // Ok, at this moment we will be able to retrieve views and check correctness of they data
+
+  // After that will try to modify some data and ensure that views will be updated
+
+  // After that we can try to render entire page and check results
+
+
+
+
 }
